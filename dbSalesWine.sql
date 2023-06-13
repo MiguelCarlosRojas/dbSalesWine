@@ -45,25 +45,6 @@ VALUES
 	('15258544','Fabiana','Carrizales Campos','951144235','fabiana.carrizales@outlook.com','05/04/1997','C'),
 	('44712214','Valeria','Mendoza Solano','972544681','valeria.mendoza@yahoo.com','06/06/1997','C');
 
--- Obtener registros ordenados
-SELECT 
-	id as 'ID',
-	number_dni as 'DNI',
-	CONCAT(UPPER(last_name), ', ', names) AS 'PERSONA',
-	cell_phone as 'CELULAR',
-	email as 'EMAIL',
-    FORMAT(birthday, 'dd - MMM - yyyy') AS 'FEC. NACIMIENTO',
-    CASE 
-    WHEN type_person = 'V' THEN 'Vendedor' 
-    WHEN type_person = 'C' THEN 'Cliente'
-	WHEN type_person = 'J' THEN 'Jefe'
-    END AS 'Tipo'
-INTO listado_persons
-FROM persons;
-
--- Obtener todos los registros
-SELECT * FROM listado_persons;
-
 /* Crear tabla product */
 CREATE TABLE product (
     code char(3)  NOT NULL CHECK (code LIKE 'P[0-9][0-9]'),
@@ -92,36 +73,6 @@ VALUES
 	('P10', 'Black Whiskey Don Michael', 'W', 750, 'P', 159.90, 70, 'A'),
 	('P11', 'Whiskey Chivas Regal 12 Años', 'W', 500, 'E', 89.90, 70, 'A');
 
--- Obtener registros ordenados
-SELECT 
-    code AS 'CODIGO',
-    names AS 'PRODUCTO',
-    UPPER(CASE 
-        WHEN type = 'V' THEN 'Vino'
-        WHEN type = 'P' THEN 'Pisco'
-        WHEN type = 'T' THEN 'Tequila'
-        WHEN type = 'W' THEN 'Whisky'
-    END) AS 'TIPO',
-    CONCAT(volume, ' ml.') AS 'VOLUMEN',
-    CASE 
-        WHEN country = 'P' THEN 'Perú'
-        WHEN country = 'A' THEN 'Argentina'
-        WHEN country = 'C' THEN 'Chile'
-        WHEN country = 'E' THEN 'España'
-        WHEN country = 'M' THEN 'México'
-    END AS 'PAIS',
-    CONCAT('S/', price) AS 'PRECIO',
-    stock AS 'STOCK',
-    CASE 
-        WHEN status = 'A' THEN 'Activo'
-        WHEN status = 'I' THEN 'Inactivo'
-    END AS 'ESTADO'
-INTO listado_products
-FROM dbo.product;
-
--- Obtener todos los registros
-SELECT * FROM listado_products;
-
 /* Crear tabla sale */
 CREATE TABLE sale (
     id int identity(1,1)  NOT NULL,
@@ -144,38 +95,6 @@ VALUES
 	(103, 105, 'E', 'T'),
 	(100, 109, 'P', 'T'),
 	(100, 108, 'T', 'T');
-
--- Obtener registros ordenados
-SELECT 
-    s.id AS 'VENTA',
-    CONCAT(
-        FORMAT(s.date, 'dd-MMM-yy'),
-        ' - ',
-        FORMAT(s.date, 'HH:mm')
-    ) AS 'FEC. VENTA',
-    CONCAT(UPPER(pv.last_name), ', ', pv.names) AS 'VENDEDOR',
-    CONCAT(UPPER(pc.last_name), ', ', pc.names) AS 'CLIENTE',
-    UPPER(CASE
-        WHEN s.type_pay = 'E' THEN 'Efectivo'
-        WHEN s.type_pay = 'T' THEN 'Tarjeta'
-        WHEN s.type_pay = 'Y' THEN 'Yape'
-        WHEN s.type_pay = 'P' THEN 'Plin'
-    END) AS 'TIPO PAGO',
-    CASE
-        WHEN s.type_delivery = 'D' THEN 'Delivery'
-        WHEN s.type_delivery = 'T' THEN 'Tienda'
-    END AS 'TIPO ENTREGA',
-    CASE
-        WHEN s.status = 'A' THEN 'Activo'
-        WHEN s.status = 'I' THEN 'Inactivo'
-    END AS 'EST. VENTA'
-INTO listado_sale
-FROM sale s
-JOIN persons pv ON s.seller_id = pv.id
-JOIN persons pc ON s.client_id = pc.id;
-
--- Obtener todos los registros
-SELECT * FROM listado_sale;
 
 /* Crear tabla sale_detail */
 CREATE TABLE sale_detail (
@@ -209,19 +128,6 @@ VALUES
     (7, 'P04', 6),
     (7, 'P02', 3),
     (7, 'P06', 1);
-
--- Obtener registros ordenados
-SELECT 
-    sd.id AS 'ID DETALLE',
-    sd.sale_id AS 'ID VENTA',
-    p.names AS 'PRODUCTO',
-    sd.amount AS 'CANTIDAD'
-INTO listado_sale_detail
-FROM sale_detail sd
-JOIN product p ON sd.product_code = p.code;
-
--- Obtener todos los registros
-SELECT * FROM listado_sale_detail;
 
 -- foreign keys
 -- Reference: sale_detail_sale (table: sale_detail)
@@ -264,5 +170,101 @@ SELECT
 FROM 
     sys.foreign_keys fk
 GO
+
+-- Obtener registros ordenados
+CREATE VIEW list_person AS
+SELECT 
+	id as 'ID',
+	number_dni as 'DNI',
+	CONCAT(UPPER(last_name), ', ', names) AS 'PERSONA',
+	cell_phone as 'CELULAR',
+	email as 'EMAIL',
+    FORMAT(birthday, 'dd - MMM - yyyy') AS 'FEC. NACIMIENTO',
+    CASE 
+        WHEN type_person = 'V' THEN 'Vendedor' 
+        WHEN type_person = 'C' THEN 'Cliente'
+        WHEN type_person = 'J' THEN 'Jefe'
+    END AS 'Tipo'
+FROM persons;
+
+/* Listar registros de vista list_person */
+SELECT * FROM list_person;
+
+-- Obtener registros ordenados
+CREATE VIEW list_products AS
+SELECT 
+    code AS 'CODIGO',
+    names AS 'PRODUCTO',
+    UPPER(CASE 
+        WHEN type = 'V' THEN 'Vino'
+        WHEN type = 'P' THEN 'Pisco'
+        WHEN type = 'T' THEN 'Tequila'
+        WHEN type = 'W' THEN 'Whisky'
+    END) AS 'TIPO',
+    CONCAT(volume, ' ml.') AS 'VOLUMEN',
+    CASE 
+        WHEN country = 'P' THEN 'Perú'
+        WHEN country = 'A' THEN 'Argentina'
+        WHEN country = 'C' THEN 'Chile'
+        WHEN country = 'E' THEN 'España'
+        WHEN country = 'M' THEN 'México'
+    END AS 'PAIS',
+    CONCAT('S/', price) AS 'PRECIO',
+    stock AS 'STOCK',
+    CASE 
+        WHEN status = 'A' THEN 'Activo'
+        WHEN status = 'I' THEN 'Inactivo'
+    END AS 'ESTADO'
+FROM product;
+
+-- Obtener todos los registros
+SELECT * FROM list_products;
+
+-- Obtener registros ordenados
+CREATE VIEW list_sale AS
+SELECT 
+    s.id AS 'VENTA',
+    CONCAT(
+        FORMAT(s.date, 'dd-MMM-yy'),
+        ' - ',
+        FORMAT(s.date, 'HH:mm')
+    ) AS 'FEC. VENTA',
+    CONCAT(UPPER(pv.last_name), ', ', pv.names) AS 'VENDEDOR',
+    CONCAT(UPPER(pc.last_name), ', ', pc.names) AS 'CLIENTE',
+    UPPER(CASE
+        WHEN s.type_pay = 'E' THEN 'Efectivo'
+        WHEN s.type_pay = 'T' THEN 'Tarjeta'
+        WHEN s.type_pay = 'Y' THEN 'Yape'
+        WHEN s.type_pay = 'P' THEN 'Plin'
+    END) AS 'TIPO PAGO',
+    CASE
+        WHEN s.type_delivery = 'D' THEN 'Delivery'
+        WHEN s.type_delivery = 'T' THEN 'Tienda'
+    END AS 'TIPO ENTREGA',
+    CASE
+        WHEN s.status = 'A' THEN 'Activo'
+        WHEN s.status = 'I' THEN 'Inactivo'
+    END AS 'EST. VENTA'
+FROM sale s
+JOIN persons pv ON s.seller_id = pv.id
+JOIN persons pc ON s.client_id = pc.id;
+
+
+-- Obtener todos los registros
+SELECT * FROM list_sale;
+
+-- Obtener registros ordenados
+CREATE VIEW list_sale_detail 
+AS
+SELECT 
+    sd.id AS 'ID DETALLE',
+    sd.sale_id AS 'ID VENTA',
+    p.names AS 'PRODUCTO',
+    sd.amount AS 'CANTIDAD'
+FROM sale_detail sd
+JOIN product p ON sd.product_code = p.code;
+
+-- Obtener todos los registros
+SELECT * FROM list_sale_detail;
 
 -- fin
